@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+    <style>
+        .logo {
+            background-image: url(/static/logo.png);
+            width: 100px;
+            height: 100px;
+            background-size: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="row justify-content-center">
+                    <div class="logo mt-5"></div>
+                </div>
+                <div class="row">
+                    <form class="w-100">
+                        <div class="form-group mt-5">
+                            <label for="search">Search Chartbusters</label>
+                            <input type="text" class="form-control" id="search" aria-describedby="searchHelp" placeholder="Search Chartbusters">
+                            <small id="searchHelp" class="form-text text-muted">Search across Spotify!</small>
+                        </div>
+                    </form>
+                </div>
+                <h3>Top 50 Songs on spotify</h3>
+                <div class="row mt-3">
+                    <div class="list-group w-100">
+                        <div class="progress d-none">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+</body>
+
+<script>
+    getSongs('');
+
+    $('#search').on('keypress', function(e) {
+        if(e.which == 13) {
+            if ($(this).val().trim() == "") {
+                getSongs('');
+                return;
+            }
+            let s = $(this).val().trim();
+            getSongs(s);
+        }
+    });
+
+    function getSongs(q) {
+        $('.list-group .list-group-item').remove();
+        $('.progress').removeClass('d-none');
+        if (q == "") {
+            $.ajax({
+                url: "/api/v1/songs", success: function (result) {
+                    $('.progress').addClass('d-none');
+                    result.data.forEach(song => {
+                            $('.list-group').append(`<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1"><span class="badge badge-primary badge-pill">` + song.rank + `</span> ` + song.name + `</h5>
+                                <small>` + moment.utc(song.duration_ms).format('mm:ss') + `</small>
+                                </div>
+                                <small>` + song.artist + `</small>
+                            </a>`);
+                    });
+                }
+            });
+        }
+        else {
+            $.ajax({
+                url: "/api/v1/search",
+                type: "POST",
+                data: {query: q},
+                success: function (result) {
+                    $('.progress').addClass('d-none');
+                    result.data.forEach(song => {
+                            $('.list-group').append(`<a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1"><span class="badge badge-primary badge-pill">` + song.rank + `</span> ` + song.name + `</h5>
+                                <small>` + moment.utc(song.duration_ms).format('mm:ss') + `</small>
+                                </div>
+                                <small>` + song.artist + `</small>
+                            </a>`);
+                    });
+                }
+            });
+        }
+    }
+</script>
+
+</html>
